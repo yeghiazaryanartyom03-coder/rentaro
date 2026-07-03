@@ -2,6 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { type Car, type Booking } from "@/lib/types";
+import axios from "axios";
+import { toast } from "sonner";
 
 
 interface BookingFormProps {
@@ -78,15 +80,23 @@ export default function BookingForm({ car }: BookingFormProps) {
     setIsSubmitting(true);
 
     try {
-      // Здесь будет ваш реальный POST запрос на создание бронирования
-      // Пример: await axios.post("/api/bookings", { carId: car.id, ...formData });
+      await axios.post("/api/booking", {
+        carId: car.id,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        startDate: formData.pickupDate,
+        endDate: formData.returnDate,
+        pickupLocation: formData.pickupLocation,
+        returnLocation: formData.returnLocation,
+      });
       console.log("Отправка данных на сервер:", { carId: car.id, ...formData });
-      
-      // Имитируем задержку сети
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      toast.success("Бронирование успешно отправлено! Менеджер свяжется с вами.");
       setSubmitSuccess(true);
     } catch (error) {
       console.error("Ошибка при бронировании:", error);
+      toast.error("Ошибка при бронировании. Пожалуйста, попробуйте еще раз.");
     } finally {
       setIsSubmitting(false);
     }

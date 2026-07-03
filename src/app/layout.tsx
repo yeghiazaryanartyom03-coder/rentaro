@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteNav } from "./components/SiteNav";
 import "./globals.css";
+import { Toaster } from "sonner"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,10 @@ export default function RootLayout({
       <body className="min-h-full bg-[#0B0B0B] text-white">
         <SiteNav />
         {children}
+        <Toaster richColors position="top-right" closeButton />
       </body>
     </html>
   );
 }
+
+
