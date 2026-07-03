@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { type Car, type Booking } from "@/lib/types";
+import { type Car } from "@/lib/types";
 import axios from "axios";
 import { toast } from "sonner";
 
 
-interface BookingFormProps {
-  car: Car;
-}
 
-export default function BookingForm({ car }: BookingFormProps) {
+
+export default function BookingForm({ car }: {car: Car}) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",

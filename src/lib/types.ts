@@ -35,4 +35,7 @@ export interface Booking {
   endDate: Date;
   status: string; 
   createdAt: Date;
+  pickupLocation: string;
+  returnLocation: string;
+  car?: Car;
 }
