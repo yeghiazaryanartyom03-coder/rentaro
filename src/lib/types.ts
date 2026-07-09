@@ -5,7 +5,7 @@ export interface Car{
   year: number;
   priceAMD: number;
   fuel?: string | null;
-  transmission?: string | null;
+  gearbox?: string | null;
   body?: string | null;
   color: string
   engine?: string | null;
@@ -17,6 +17,10 @@ export interface Car{
   images?: Image[];
   bookings?: Booking[]
 }
+
+export type CarWithImages = Car & {
+  images: Image[];
+};
 
 export interface Image {
   id: string;

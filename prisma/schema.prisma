@@ -18,12 +18,12 @@ model Car {
   year        Int
   priceAMD    Int
   fuel        String?
-  transmission String?
-  body        String?
+  body        String
   color       String
   engine      String?
   horsePower  Int?
   quantity    Int
+  gearbox     String
   description String?
   seats       Int
   createdAt   DateTime @default(now())
@@ -50,6 +50,17 @@ model Booking {
   endDate   DateTime
   pickupLocation  String
   returnLocation  String
-  status    String   @default("Pending")
+  status    String   @default("pending")
   createdAt DateTime @default(now())
+
+  @@index([carId, status, startDate, endDate])
+}
+
+model BlacklistedToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime 
+  createdAt DateTime @default(now())
+
+  @@index([token])
 }
