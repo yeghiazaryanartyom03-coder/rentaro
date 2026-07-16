@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { Link } from "@/navigation";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 

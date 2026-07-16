@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { cars, filters, formatter } from "../data/cars";
-import Link from "next/link";
+import {  filters, formatter } from "../../data/cars";
+import { Link } from "@/navigation";
+import {type Car } from "@/lib/types";
 
-export function CarsPageClient() {
+export function CarsPageClient({cars}: {cars: Car[] }) {
   const [activeBody, setActiveBody] = useState("Все");
   const [query, setQuery] = useState("");
 
@@ -20,7 +21,7 @@ export function CarsPageClient() {
 
       return matchesBody && matchesQuery;
     });
-  }, [activeBody, query]);
+  }, [activeBody, query, cars]);
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8">
@@ -87,14 +88,27 @@ export function CarsPageClient() {
             className="overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#171717]"
           >
             <div className="relative aspect-[16/10] overflow-hidden bg-[#0B0B0B]">
-              <Image
-                alt={`${car.brand} ${car.model}`}
-                fill
-                loading="eager"
-                sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
-                className="h-full w-full object-cover transition duration-500 hover:scale-105"
-                src={car.image}
-              />
+            {
+              car.images && car.images.length > 0 ? (
+                <Image
+                  alt={`${car.brand} ${car.model}`}
+                  fill
+                  loading="eager"
+                  sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                  src={car.images[0].url}
+                />
+              ) : (
+                <Image
+                  alt={`${car.brand} ${car.model}`}
+                  fill
+                  loading="eager"
+                  sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                  src={"/placeholder-car.png"}
+                />
+              )
+            }
               <div className="absolute left-3 top-3 rounded-md bg-black/75 px-3 py-1 text-sm font-medium text-white">
                 {car.year}
               </div>
@@ -128,7 +142,7 @@ export function CarsPageClient() {
                 <div className="border-t border-[#2A2A2A] pt-3">
                   <dt className="text-[#A3A3A3]">КПП</dt>
                   <dd className="mt-1 font-medium text-white">
-                    {car.transmission}
+                    {car.gearbox}
                   </dd>
                 </div>
                 <div className="border-t border-[#2A2A2A] pt-3">
@@ -137,7 +151,7 @@ export function CarsPageClient() {
                 </div>
               </dl>
 
-              {car.available > 0 ? (
+              {car.quantity > 0 ? (
                 <Link
                   href={`/booking/${car.id}`}
                   className="flex h-12 cursor-pointer items-center justify-center rounded-lg bg-[#FF7A00] px-4 text-sm font-semibold text-black transition hover:bg-[#ff8f26] focus:outline-none focus:ring-2 focus:ring-[#FF7A00] focus:ring-offset-2 focus:ring-offset-[#171717]"

@@ -2,26 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { apiError } from "@/lib/apiError";
 
-export async function GET() {
-  try {
-    const bookings = await prisma.booking.findMany({
-      include: {
-        car: true, // Подтягиваем данные автомобиля (модель, бренд, цену и т.д.)
-      },
-      orderBy: {
-        createdAt: "desc", // Сначала новые
-      },
-    });
-
-    return NextResponse.json(bookings);
-  } catch (error) {
-    console.error("Ошибка при получении бронирований:", error);
-    return apiError(
-        "Не удалось загрузить бронирования" , 500 
-    );
-  }
-}
-
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -30,33 +10,52 @@ export async function POST(req: Request) {
         if (!carId || !firstName || !lastName || !phone || !email || !startDate || !endDate) {
             return apiError("Missing required fields", 400);
         }
-        
-        if(new Date(startDate) >= new Date(endDate)) {
+
+        const parsedStartDate = new Date(startDate);
+        const parsedEndDate = new Date(endDate);
+
+        if (!Number.isFinite(parsedStartDate.getTime()) || !Number.isFinite(parsedEndDate.getTime())) {
+            return apiError("Invalid booking dates", 400);
+        }
+
+        if(parsedStartDate >= parsedEndDate) {
             return apiError("Start date must be before end date", 400);
         }
 
         const today = new Date();
-        if(new Date(startDate)< today || new Date(endDate)<today) {
+        if(parsedStartDate < today || parsedEndDate < today) {
             return apiError("Booking dates cannot be in the past", 400);
         }
 
-        const conflictingBookings = await prisma.booking.findMany({
+        const car = await prisma.car.findUnique({
+            where: { id: carId },
+            select: { quantity: true },
+        });
+
+        if (!car) {
+            return apiError("Car not found", 404);
+        }
+
+        if (car.quantity <= 0) {
+            return apiError("Car is not available", 400);
+        }
+
+        const conflictingBookingsCount = await prisma.booking.count({
             where: {
-                carId: carId,
-                OR: [
-                    {
-                        startDate: {
-                            lte: new Date(endDate),
-                        },
-                        endDate: {
-                            gte: new Date(startDate),
-                        },
-                    },
-                ],
+                carId,
+                status: {
+                    not: "cancelled",
+                },
+                startDate: {
+                    lt: parsedEndDate,
+                },
+                endDate: {
+                    gt: parsedStartDate,
+                },
             },
         });
 
-        if (conflictingBookings.length > 0) {
+        if (conflictingBookingsCount >= car.quantity) {
             return apiError("The selected dates are already booked", 400);
         }
 
@@ -67,8 +66,8 @@ export async function POST(req: Request) {
                 lastName,
                 phone,
                 email,
-                startDate: new Date(body.startDate),
-                endDate: new Date(body.endDate),
+                startDate: parsedStartDate,
+                endDate: parsedEndDate,
                 pickupLocation,
                 returnLocation,
                 status: "pending",
@@ -79,30 +78,4 @@ export async function POST(req: Request) {
         console.error(error);
         return apiError("Something went wrong", 500);
     }
-}
-
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
-) {
-  try {
-    const resolvedParams = await params;
-    const bookingId = resolvedParams.id;
-    
-    const { status } = await request.json(); // Ожидаем 'confirmed' или 'cancelled'
-
-    if (!status || !["confirmed", "cancelled", "pending"].includes(status)) {
-      return apiError("Неверный статус", 400);
-    }
-
-    const updatedBooking = await prisma.booking.update({
-      where: { id: bookingId },
-      data: { status },
-    });
-
-    return NextResponse.json(updatedBooking);
-  } catch (error) {
-    console.error("Ошибка обновления бронирования:", error);
-    return apiError("Ошибка при обновлении статуса", 500);
-  }
 }

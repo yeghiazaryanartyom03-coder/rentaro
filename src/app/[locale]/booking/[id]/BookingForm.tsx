@@ -24,30 +24,35 @@ export default function BookingForm({ car }: {car: Car}) {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   
   const isBaseAvailable = car.quantity > 0;
-  const bookedDates = car.bookings || [];
-
   // Динамическая валидация дат через useMemo
   const dateError = useMemo(() => {
     if (!formData.pickupDate || !formData.returnDate) return null;
+    const bookedDates = car.bookings ?? [];
 
     const pickup = new Date(formData.pickupDate).getTime();
     const dropoff = new Date(formData.returnDate).getTime();
+
+    if (!Number.isFinite(pickup) || !Number.isFinite(dropoff)) {
+      return "Укажите корректные даты поездки.";
+    }
 
     if (dropoff <= pickup) {
       return "Дата возврата должна быть позже даты получения.";
     }
 
-    for (const booking of bookedDates) {
+    const overlappingBookings = bookedDates.filter((booking) => {
       const bookedStart = new Date(booking.startDate).getTime();
       const bookedEnd = new Date(booking.endDate).getTime();
 
-      if (pickup < bookedEnd && dropoff > bookedStart) {
-        return "Этот автомобиль уже забронирован на выбранный период. Попробуйте другие даты.";
-      }
+      return pickup < bookedEnd && dropoff > bookedStart;
+    });
+
+    if (overlappingBookings.length >= car.quantity) {
+      return "Этот автомобиль уже забронирован на выбранный период. Попробуйте другие даты.";
     }
 
     return null;
-  }, [formData.pickupDate, formData.returnDate, bookedDates]);
+  }, [formData.pickupDate, formData.returnDate, car.bookings]);
 
   // Проверка валидности всей формы для активации кнопки
   const isFormValid = useMemo(() => {

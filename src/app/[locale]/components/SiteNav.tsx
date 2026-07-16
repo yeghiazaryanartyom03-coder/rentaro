@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link } from "@/navigation";
+import Image from "next/image";
+import { usePathname } from "@/navigation";
 
 const navItems = [
   { label: "Home page", href: "/home" },
@@ -21,7 +22,13 @@ export function SiteNav() {
           href="/home"
           className="text-lg font-semibold uppercase tracking-[0.18em] text-[#FF7A00]"
         >
-          Rentaro
+          <Image
+            src="/rentaro-logo.jpg" 
+            alt="Rentaro Logo" 
+            width={100} 
+            height={33} 
+            priority 
+          />
         </Link>
 
         <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0">
